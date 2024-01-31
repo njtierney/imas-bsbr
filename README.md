@@ -1,18 +1,17 @@
-# Nick's Slide Template (replace with talk title)
-
-This is a slide template I have put on github so that I can get started with talks easier.
+# Better software, better research
 
 # Abstract
 
-# Slide available [here](https://talks.njtierney.com/<GITHUB-REPO-NAME>)
+In this talk I will showcase some of my work in exploratory data analysis, demonstrate the basic use of the greta (https://greta-stats.org/) package for statistical modelling, and discuss some of the research pipeline work we are doing in the infectious disease and ecology modelling (IDEM) group (https://www.telethonkids.org.au/our-research/brain-and-behaviour/child-health-analytics-research-program/infectious-disease-ecology-and-modelling/). 
 
-# Take home messages 
+I really believe we can do better research with better software, and I'm particularly excited to translate methods into reusable software. I'm keen to discuss ideas and potential collaborations on producing software, and developing pipelines (e.g., with the targets package (https://github.com/ropensci/targets)). I'm also happy to answer random questions about using R. I had a lot of help from people when I first started and I want to reciprocate that kindness.
 
-1. Point one
-1. Point two
-1. Point three
+# Slide available [here](https://talks.njtierney.com/talk-imas-2014)
 
 # Thanks
+
+- Nick Golding
+- Mike Sumner
 
 # Resources
 
@@ -27,7 +26,6 @@ Eventually, this theme will add these features in:
   - Header font is **Josefin Sans**
   - Body text font is **Montserrat**
   - Code font is **Fira Mono**
-
 
 # Bio
 

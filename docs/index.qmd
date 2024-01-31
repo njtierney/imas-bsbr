@@ -1,7 +1,7 @@
 ---
-title: "**Awesome** Title"
-subtitle: "Where is this talk?"
-date: "DATE OF TALK"
+title: "Better software, better research"
+subtitle: "IMAS, Hobart, Tasmania"
+date: "2024-01-31"
 author: "Nicholas Tierney"
 institute: Telethon Kids Institute
 format: 
@@ -10,7 +10,7 @@ format:
     incremental: true
     slide-number: true
     show-slide-number: all
-    footer: "njtierney.github.io/GH-REPO-NAME/"
+    footer: "talks.njtierney.com/imas-bsbr"
 editor: visual
 execute: 
   echo: false
@@ -28,8 +28,12 @@ library(colorspace)
 library(naniar)
 library(visdat)
 library(icons)
+library(brolgar)
+library(ggrepel)
+library(palmerpenguins)
+library(greta)
+greta_sitrep()
 ```
-
 
 ```{r}
 #| label: source-r-files
@@ -78,86 +82,509 @@ nipa <- list(red = "#c03018",
 
 ```
 
+## The story so far
 
-# Intro
+-   2008-2012: Undergraduate + honours in Psychology
 
-# Background
+-   2013 - 2017: PhD Statistics, QUT
 
-Put More slides here.
+    -   Exploratory Data Analysis (EDA)
+    -   Bayesian / Geospatial statistics / Optimal placement
 
-::: {.notes}
-Speaker notes go here.
+-   2018 - 2020: Research Fellow / Lecturer at Monash
+
+    -   Design and improve tools for EDA
+
+-   2020 - Now: Research Software Engineer \@ Telethon Kids Institute
+
+    -   Maintain and design tools for data analysis
+
+## Define: Research Software Engineer
+
+> A Research Software Engineer (RSE) combines professional software engineering expertise with an intimate understanding of research.
+
+-- (from https://society-rse.org/about/)
+
+## What sorts of things does an RSE do?
+
+-   Create software to **solve research problems**
+
+-   Develop tools that **abstract the right components** to facilitate research
+
+-   Help researchers to **find and learn** good tools
+
+-   Support researchers with (computational) reproducibility
+
+-   (adapted from Heidi Seibold's [UseR2021 Keynote talk](https://docs.google.com/presentation/d/1XQc2U2X8hiK43UzUi9IwvsvULxhVy0WzWSa_Kt4ZJv4/view#slide=id.gdbfb32d486_0_448))
+
+::: notes
+I'm a research software engineer, I help translate research methods into open source research software. One of my primary tasks is Extending/maintaining `greta` for statistical computing. I also work on creating and extending other software as needed for our team. Optional bits: PhD statistics - emphasis on frustration developing workflows R packages to facilitate exploratory data analysis Overviews, missing data, longitudinal data
 :::
 
-# This next slide is an image
+## `visdat::vis_dat(airquality)`
 
-##  {background-image="images/IMAGE.png" background-size="contain"}
+```{r}
+#| label: show-visdat
+#| fig-height: 3.5
+#| fig-width: 8
+vis_dat(airquality)
+```
 
+## `naniar::gg_miss_var(airquality)`
+
+```{r}
+#| label: show-gg-miss-var
+#| fig-height: 3.5
+#| fig-width: 8
+gg_miss_var(airquality)
+```
+
+## `naniar::gg_miss_var(airquality, facet = Month)`
+
+```{r}
+#| label: show-gg-miss-var-facet
+#| fig-height: 3.5
+#| fig-width: 8
+gg_miss_var(airquality, facet = Month)
+```
+
+## `naniar::gg_miss_upset(airquality)`
+
+```{r}
+#| label: gg-miss-upset
+#| fig-height: 3.5
+#| fig-width: 8
+gg_miss_upset(airquality)
+```
+
+## `brolgar` - take spaghetti
+
+```{r}
+#| label: gg-brolgar
+#| fig-height: 3.5
+#| fig-width: 8
+ggplot(heights,
+       aes(x = year,
+           y = height_cm,
+           group = country)) + 
+  geom_line()
+```
+
+## `brolgar` - spread spaghetti
+
+```{r}
+#| label: gg-brolgar-spread
+#| fig-height: 3.5
+#| fig-width: 8
+ggplot(heights,
+       aes(x = year,
+           y = height_cm,
+           group = country)) + 
+  geom_line() + 
+  facet_strata(along = -year)
+```
+
+## `brolgar` - identify spaghetti
+
+```{r}
+#| label: gg-brolgar-identify
+#| fig-height: 3.5
+#| fig-width: 8
+
+set.seed(2019-09-30-0012)
+
+heights_feature <- heights %>%
+  features(height_cm, feat_spread) 
+
+heights_feature_flat <- heights_feature %>%
+  left_join(heights, by = "country") %>%
+  group_by(country) %>%
+  mutate(height_cm = max(height_cm))
+
+heights_feature_flat_point <- heights_feature_flat %>%
+  filter(year == max(year))
+
+gg_id_features_line_point <- 
+ggplot(heights_feature_flat,
+       aes(x = year,
+           y = height_cm,
+           group = country)) + 
+  geom_line() + 
+  geom_point(data = heights_feature_flat_point,
+             aes(x = year,
+                 y = height_cm)) +
+  lims(y = range(heights$height_cm))
+
+min_max <- heights_feature_flat_point %>%
+  ungroup() %>%
+  filter(near_quantile(height_cm, c(0,1), 0.01)) 
+
+gg_id_features_red_dots <- 
+  ggplot(heights_feature_flat_point,
+         aes(x = year,
+             y = height_cm)) +
+  geom_point(data = min_max,
+             colour = "#c03018",
+             size = 6) +
+  geom_point() +
+  lims(y = range(heights$height_cm),
+       x = range(heights$year))
+
+gg_id_features_red_dots_only <- 
+ggplot(min_max,
+       aes(x = year,
+           y = height_cm,
+           group = country)) + 
+  geom_point(colour = nipa[["red"]],
+             size = 6) + 
+  geom_point() + 
+  lims(y = range(heights$height_cm),
+       x = range(heights$year))
+
+min_max_joined <- heights %>% filter(country %in% min_max$country)
+
+gg_join_red <- 
+ggplot(min_max,
+       aes(x = year,
+           y = height_cm,
+           group = country)) + 
+  geom_point(colour = nipa[["red"]],
+             size = 6) + 
+  geom_point() + 
+  geom_line(data = min_max_joined,
+            colour = nipa[["red"]],
+            linewidth = 2) + 
+  lims(y = range(heights$height_cm),
+       x = range(heights$year))
+
+gg_join_red_all <- 
+ggplot(min_max,
+       aes(x = year,
+           y = height_cm,
+           group = country)) + 
+  geom_point(colour = nipa[["red"]],
+             size = 6) + 
+  geom_point() + 
+  geom_line(data = heights,
+            aes(x = year,
+                y = height_cm),
+            alpha = 0.3) +
+  geom_line(data = min_max_joined,
+            colour = nipa[["red"]],
+            size = 2) + 
+  lims(y = range(heights$height_cm),
+       x = range(heights$year))
+
+gg_join_red_all + 
+  geom_label_repel(colour = nipa[["red"]],
+             aes(label = country),
+             size = 10,
+             nudge_x = -10)
+```
+
+## `maxcovr` - cover facilities
+
+```{r}
+#| label: "aed-1"
+include_graphics("images/aed-placement-0.jpg")
+```
+
+## `maxcovr` - cover facilities
+
+```{r}
+#| label: "aed-2"
+include_graphics("images/aed-placement-2.jpg")
+```
+
+<!-- Professor Nick Golding -->
+
+<!-- [greta-stats.org](https://www.greta-stats.org) -->
+
+##  {background-image="images/greta-logo-background.png" background-size="contain"}
+
+## greta is R code
+
+::: columns
+::: {.column width="45%"}
+**stan**
+
+```         
+data {
+  real alpha;
+  real beta;
+  real<lower=0> sigma2;
+  int<lower=0> J;
+  array[J] int y;
+  vector[J] Z;
+  array[J] int n;
+}
+transformed data {
+  real<lower=0> sigma;
+  sigma = sqrt(sigma2);
+}
+parameters {
+  real theta1;
+  real theta2;
+  vector[J] X;
+}
+model {
+  array[J] real p;
+  theta1 ~ normal(0, 32); // 32^2 = 1024 
+  theta2 ~ normal(0, 32);
+  X ~ normal(alpha + beta * Z, sigma);
+  y ~ binomial_logit(n, theta1 + theta2 * X);
+}
+```
+:::
+
+::: {.column width="55%"}
+**JAGS**
+
+```         
+for(j in 1 : J) {
+   y[j] ~ dbin(p[j], n[j])
+   logit(p[j]) <- theta[1] + theta[2] * X[j]
+   X[j] ~ dnorm(mu[j], tau)
+   mu[j] <- alpha + beta * Z[j]
+}
+theta[1] ~ dnorm(0.0, 0.001)
+theta[2] ~ dnorm(0.0, 0.001)
+```
+
+**greta**
+
+``` r
+theta <- normal(0, 32, dim = 2)
+mu <- alpha + beta * Z
+X <- normal(mu, sigma)
+p <- ilogit(theta[1] + theta[2] * X)
+distribution(y) <- binomial(n, p)
+```
+:::
+:::
+
+# google tensorflow
+
+::: columns
+::: {.column width="45%"}
+-   automatic differentiation
+-   efficient linear algebra
+-   highly parallel
+:::
+
+::: {.column width="45%"}
+```{r}
+#| label: tf-examples
+include_graphics("images/tf-examples.png")
+```
+:::
+:::
+
+## extendable
+
+```{r}
+#| label: extendable
+include_graphics("images/greta-extendable.png")
+```
+
+# `greta.gp`
+
+> `greta.gp` extends `greta` to let you define Gaussian processes as part of your model. It provides a syntax to create and combine GP kernels, and use them to define either full rank or sparse Gaussian processes.
+
+::: columns
+::: {.column width="60%"}
+``` r
+# kernel & GP
+kernel <- rbf(rbf_len, rbf_var) + 
+            bias(1)
+f <- gp(x, kernel)
+# likelihood
+distribution(y) <- normal(f, obs_sd)
+# prediction
+f_plot <- project(f, x_plot)
+```
+:::
+
+::: {.column width="38%"}
+```{r extendable-greta-gp}
+include_graphics("images/greta-extendable-gp.png")
+```
+:::
+:::
+
+## why 'greta' ?
+
+::: columns
+::: {.column width="50%"}
+Grete Hermann (1901 - 1984)
+
+wrote the first algorithms for computer algebra
+
+... without a computer
+
+(To avoid people saying 'greet', the package is spelled *greta* instead)
+:::
+
+::: {.column width="50%"}
+```{r show-grete, out.width = "60%"}
+include_graphics("images/grete-hermann.jpeg")
+```
+:::
+:::
+
+## What greta looks like
+
+::: columns
+::: {.column width="50%"}
+$$
+\alpha \sim Normal(0, 5)
+$$
+
+$$
+\beta \sim Normal(0, 3)
+$$
+
+$$
+\sigma \sim logNormal(0, 5)
+$$ $$
+\mu = \alpha + \beta X
+$$
+
+$$
+Y \sim Normal(\mu, \sigma)
+$$
+:::
+
+::: {.column width="50%"}
+```{r greta-show, eval = FALSE, echo = TRUE}
+x <- penguins$bill_length_mm
+y <- penguins$flipper_length_mm
+alpha <- normal(0,5)
+beta <- normal(0,3)
+sd <- lognormal(0,3)
+mu <- alpha + coef * x
+distribution(y) <- normal(mu, sd)
+m <- model(mu, beta, sd)
+draws <- mcmc(m)
+```
+:::
+:::
+
+## IDEM group
+
+```{=html}
+<iframe width="1200" height="600" src="https://www.telethonkids.org.au/our-research/brain-and-behaviour/child-health-analytics-research-program/infectious-disease-ecology-and-modelling" title="IDEM group"></iframe>
+```
+# Research pipelines
+
+## A best intentioned set of ordered scripts:
+
+::: incremental
+-   00-setup.R
+-   01-read.R
+-   02-clean.R
+-   03-model.R
+:::
+
+::: aside
+Inspiration from [Will Landau's talk on targets](https://wlandau.github.io/targets-tutorial/#1)
+:::
+
+## Can turn into a headache:
+
+::: columns
+::: {.column width="50%"}
+::: incremental
+-   00-setup.R
+-   01-read.R
+-   02-clean.R
+-   03-model.R
+-   03-model2A.R
+-   05-results.R
+:::
+:::
+
+::: {.column width="50%"}
+::: incremental
+-   Did I run model already?
+-   I made changes in "model2", but do I need to re-run EVERYTHING?
+-   Can I save some time and skip parts?
+:::
+:::
+:::
+
+::: aside
+Inspiration from [Will Landau's talk on targets](https://wlandau.github.io/targets-tutorial/#1)
+:::
+
+## {targets} asks you to embrace a functional approach
+
+```{r}
+#| echo: true
+clean_storms <- function(storms_raw) {
+  storms_raw %>% 
+    filter(year >= 2000)
+}
+
+model_storms <- function(storms_tidy) {
+  lm(wind ~ pressure + year + month + lat + long,
+     data = storms_tidy)
+}
+
+```
+
+## {targets} asks you to embrace a functional approach
+
+```         
+# _targets.R
+## Load your packages, e.g. library(targets).
+source("./packages.R")
+## Load your R files
+tar_source()
+
+## tar_plan supports drake-style targets and also tar_target()
+tar_plan(
+  tar_file(storms_file, "data/storms.csv"),
+  storms_raw = read_csv(storms_file),
+  storms_tidy = clean_storms(storms_raw),
+  storms_model = model_storms(storms_tidy),
+  model_summary = summary(storms_model),
+  tar_quarto(eda, "doc/eda.qmd")
+)
+```
+
+::: aside
+Inspiration from [Will Landau's talk on targets](https://wlandau.github.io/targets-tutorial/#1)
+:::
+
+## Research pipelines: Let's iterate together?
+
+<https://github.com/njtierney/targets-storms>
 
 # Take homes
 
-# Future Directions
-
-::: {.fragment .fade-up}
-- More features
-- More features
-- More features
-:::
-
-# Test
+-   functions are a way to express intent
+-   targets can be used to save on iteration pain
 
 # Thanks
 
-
-:::: {.columns}
-
-::: {.column width = "40%"}
-
-- So many great people
-- So many great people
-- So many great people
-- So many great people
-
-:::
-
-::: {.column width = "40%"}
-
-- So many great people
-- So many great people
-- So many great people
-- So many great people
-
-:::
-
-::::
+-   Nick Golding
+-   Saras Windecker
+-   Di Cook
+-   Miles McBain
+-   Mike Sumner
+-   Nicole Hill
 
 # Resources
 
-- So many things
-- So many things
-- So many things
-- So many things
+-   visdat:
+-   naniar:
+-   brolgar:
+-   targets:
 
 # Colophon
 
-- Slides made using [quarto](https://github.com/quarto-dev/quarto)
-- Colours taken + modified from [lorikeet theme from ochRe](https://github.com/ropenscilabs/ochRe)
-[njtierney/njt-talks](github.com/njtierney/njt-talks)
-<!-- - Header font is **Josefin Sans** -->
-<!-- - Body text font is **Montserrat** -->
-<!-- - Code font is **Fira Mono** -->
-<!-- - template available:  -->
-
-# Learning more
-
-`r icon_box` [package link]()
-
-`r icon_link` [talk link]()
-
-`r icon_twitter` nj_tierney
-
-`r icon_github` njtierney
-
-`r icon_plane` nicholas.tierney@gmail.com
+-   Slides made using [quarto](https://github.com/quarto-dev/quarto)
+-   Colours taken + modified from [lorikeet theme from ochRe](https://github.com/ropenscilabs/ochRe) [njtierney/njt-talks](github.com/njtierney/njt-talks) <!-- - Header font is **Josefin Sans** --> <!-- - Body text font is **Montserrat** --> <!-- - Code font is **Fira Mono** --> <!-- - template available:  -->
 
 # **End.**
