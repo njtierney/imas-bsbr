@@ -724,21 +724,18 @@ Y \sim Normal(\mu, \sigma)
 </section>
 <section id="targets-asks-you-to-embrace-a-functional-approach-1" class="slide level2">
 <h2>{targets} asks you to embrace a functional approach</h2>
-<pre><code># _targets.R
-## Load your packages, e.g. library(targets).
-source("./packages.R")
-## Load your R files
-tar_source()
-
-## tar_plan supports drake-style targets and also tar_target()
-tar_plan(
-  tar_file(storms_file, "data/storms.csv"),
-  storms_raw = read_csv(storms_file),
-  storms_tidy = clean_storms(storms_raw),
-  storms_model = model_storms(storms_tidy),
-  model_summary = summary(storms_model),
-  tar_quarto(eda, "doc/eda.qmd")
-)</code></pre>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7" data-code-line-numbers="6|7|8|9"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href=""></a><span class="fu">source</span>(<span class="st">"./packages.R"</span>)</span>
+<span id="cb7-2"><a href=""></a><span class="fu">tar_source</span>()</span>
+<span id="cb7-3"><a href=""></a></span>
+<span id="cb7-4"><a href=""></a><span class="fu">tar_plan</span>(</span>
+<span id="cb7-5"><a href=""></a>  <span class="fu">tar_file</span>(storms_file, <span class="st">"data/storms.csv"</span>),</span>
+<span id="cb7-6"><a href=""></a>  <span class="at">storms_raw =</span> <span class="fu">read_csv</span>(storms_file),</span>
+<span id="cb7-7"><a href=""></a>  <span class="at">storms_tidy =</span> <span class="fu">clean_storms</span>(storms_raw),</span>
+<span id="cb7-8"><a href=""></a>  <span class="at">storms_model =</span> <span class="fu">model_storms</span>(storms_tidy),</span>
+<span id="cb7-9"><a href=""></a>  <span class="at">model_summary =</span> <span class="fu">summary</span>(storms_model),</span>
+<span id="cb7-10"><a href=""></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 
 <aside><div>
 <p>Inspiration from <a href="https://wlandau.github.io/targets-tutorial/#1">Will Landau’s talk on targets</a></p>
@@ -746,12 +743,16 @@ tar_plan(
 <section id="research-pipelines-lets-iterate-together" class="slide level2">
 <h2>Research pipelines: Let’s iterate together?</h2>
 <p><a href="https://github.com/njtierney/targets-storms" class="uri">https://github.com/njtierney/targets-storms</a></p>
+</section>
+<section id="general-r-question-time" class="slide level2">
+<h2>General R Question time</h2>
 </section></section>
 <section id="take-homes" class="title-slide slide level1 center">
 <h1>Take homes</h1>
 <ul>
 <li class="fragment">functions are a way to express intent</li>
 <li class="fragment">targets can be used to save on iteration pain</li>
+<li class="fragment">software can be really useful</li>
 </ul>
 </section>
 
@@ -770,10 +771,12 @@ tar_plan(
 <section id="resources" class="title-slide slide level1 center">
 <h1>Resources</h1>
 <ul>
-<li class="fragment">visdat:</li>
-<li class="fragment">naniar:</li>
-<li class="fragment">brolgar:</li>
-<li class="fragment">targets:</li>
+<li class="fragment">visdat: github.com/ropensci/visdat</li>
+<li class="fragment">naniar: github.com/njtierney/naniar</li>
+<li class="fragment">brolgar: github.com/njtierney/brolgar</li>
+<li class="fragment">maxcovr: github.com/njtierney/maxcovr</li>
+<li class="fragment">greta: github.com/greta-dev/greta</li>
+<li class="fragment">targets: github.com/ropensci/targets</li>
 </ul>
 </section>
 

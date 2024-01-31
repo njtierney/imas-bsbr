@@ -31,8 +31,6 @@ library(icons)
 library(brolgar)
 library(ggrepel)
 library(palmerpenguins)
-library(greta)
-greta_sitrep()
 ```
 
 ```{r}
@@ -535,21 +533,19 @@ model_storms <- function(storms_tidy) {
 
 ## {targets} asks you to embrace a functional approach
 
-```         
-# _targets.R
-## Load your packages, e.g. library(targets).
+```{r}
+#| eval: false
+#| code-line-numbers: "6|7|8|9"
+#| echo: true
 source("./packages.R")
-## Load your R files
 tar_source()
 
-## tar_plan supports drake-style targets and also tar_target()
 tar_plan(
   tar_file(storms_file, "data/storms.csv"),
   storms_raw = read_csv(storms_file),
   storms_tidy = clean_storms(storms_raw),
   storms_model = model_storms(storms_tidy),
   model_summary = summary(storms_model),
-  tar_quarto(eda, "doc/eda.qmd")
 )
 ```
 
@@ -561,10 +557,13 @@ Inspiration from [Will Landau's talk on targets](https://wlandau.github.io/targe
 
 <https://github.com/njtierney/targets-storms>
 
+## General R Question time
+
 # Take homes
 
 -   functions are a way to express intent
 -   targets can be used to save on iteration pain
+-   software can be really useful
 
 # Thanks
 
@@ -577,10 +576,12 @@ Inspiration from [Will Landau's talk on targets](https://wlandau.github.io/targe
 
 # Resources
 
--   visdat:
--   naniar:
--   brolgar:
--   targets:
+-   visdat: github.com/ropensci/visdat
+-   naniar: github.com/njtierney/naniar
+-   brolgar: github.com/njtierney/brolgar
+-   maxcovr: github.com/njtierney/maxcovr
+-   greta: github.com/greta-dev/greta
+-   targets: github.com/ropensci/targets
 
 # Colophon
 
